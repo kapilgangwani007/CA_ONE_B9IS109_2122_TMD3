@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block main %}
+<!-- The Modal -->
+<main>
+    <div style="border-bottom: solid; padding-bottom: 2em;" class="popupbg">
+        <div style="display: flex; justify-content: space-evenly;">
+            
+<section class="banner-popup">
+    <!-- Modal content -->
+    <div>
+        <form action="/update_task/{{ current_id }}" method="POST" style="margin-top: 1em;">
+            <fieldset style="display: inline;">
+
+                <legend style="color: mediumvioletred;padding: 1em; text-transform: uppercase; font-weight: 600;">
+                    <b>Edit Task</b>
+                </legend>
+
+                <input type="number" name="board_id" value="{{ board_id }}" hidden>
+
+                <label for="title"><b>Task Title</b></label>
+                <input type="text" name="title" value="{{task.title}}" required
+                    style="margin-right: 1em; min-width: 180px;"><br>
+
+                <label for="due_date"><b>Due Date</b></label>
+                <input type="date" name="due_date" value="{{task.due_date}}" required style="margin-right: 1em; min-width: 180px;"><br>
+
+                <label for="assigned_to"><b>Assign Task</b></label>
+                <select name="assigned_to" id="assigned_to" style="margin-right: 1em; min-width: 180px;">
+                    
+                    <option value="{{ task.assigned_to }}" selected>{{ task.assigned_to }}</option>
+                    <option value="unassigned">Unassigned</option>
+                    {% for user in users %}
+                        {% if user.email != task.assigned_to %}
+                            <option value="{{ user.email }}"> {{ user.email }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select><br>
+
+                <div style="display: flex; justify-content: right;">
+                    <input type="submit" name="submit" value="Update Task" class="formbutton"
+                        style="margin-right: 1em;">
+                </div>
+
+            </fieldset>
+        </form>
+
+    </div>
+
+</section>
+        </div>
+        </div>
+        </main>
+
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block main %}
+<main class="boardbgone">
+    <div style="border-bottom: solid; padding-bottom: 2em;box-shadow: rgb(0 0 0 / 100%) 0px 22px 70px 4px;" >
+        <div style="display: flex; justify-content: space-evenly;">
+            <section class="add-task tasksectionone" style=" border-style: solid;border-right: solid; ">
+                <div style="text-align: left; padding: 2em;">
+                    <!--h2>Login Info</h2-->
+                    {% if user_data %}
+                    <h3 style="padding: 0px; text-align: left;">Task Board:</h3>
+                    <h3 style="padding: 0px; text-align: left;">{{ board.name }}</h3>
+                    <div style="margin-top: 10px;">
+                        <p><b>Created By: {{ board.creator }}</b></p>
+                        <p><b>Current User: {{ user_data['name'] }}</b></p>
+                    </div>
+                    <hr>
+
+                    <!------------------------------------------ Buttons -------------------------------------------------->
+                    {% if user_data['email'] == board.creator %}
+                    <h3 style="padding: 0px; text-align: left;">Creator Options:</h3>
+                    <div style="padding: 1em;">
+                        <button class="formbutton" onclick="rename()" style="min-width: 130px; margin-left: 0.5em;">Rename Board</button>
+                        <script>
+                            function rename() {
+                                document.getElementById("rename-form").hidden = false;
+                            }
+                        </script>
+
+                        <form action="/rename_board" method="POST" id="rename-form" hidden="true">
+                            <input type="number" name="board_id" value="{{ current_id }}" hidden>
+                            <input type="text" name="name" placeholder="Enter board name" required>
+                            <input type="submit" name="submit" value="Submit" class="formbutton" style="margin-right: 1em;">
+                        </form>
+                        <form action="/delete_board" method="POST">
+                            <input type="number" name="board_id" value="{{ current_id }}" hidden>
+                            <input type="submit" name="submit" value="Delete Board" class="formbutton"  style="min-width: 130px;">
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% elif error_message %}
+                    <p>Error Message: {{ error_message }}</p>
+                    {% endif %}
+                </div>
+            </section>
+            <section class="add-task sectiontwo" style="display: flex; flex-direction: column; align-items: left;">
+                <h3 style="margin-top: 1em; text-align: left; padding-left: 0px;">Add Users and Tasks</h3>
+                <p style="color:navy ;max-width: 400px; text-align: left;">You can use these forms to add user and tasks on this board. Only the creator can add user but any board member can add or delete tasks.</p>
+                {% if user_data['email'] == board.creator %}
+                <!--------------------------------------- Add User -------------------------------------------->
+                <form action="/add_user" method="POST" style="margin-top: 0.5em; margin-left: 0px;">
+                    <fieldset style="display: inline;">
+                        <legend style="color:mediumvioletred ;padding: 1em; text-transform: uppercase; font-weight: 600;">
+                            <b>Add users to board</b>
+                        </legend>
+                        <input type="number" name="board_id" value="{{ current_id }}" hidden>
+
+                        <label for="email"><b>User Email</b></label>
+                        <input type="email" name="email" placeholder="Enter email of user" required
+                            style="margin-right: 1em; min-width: 180px;"><br>
+
+                        <div style="display: flex; justify-content: right;">
+                            <input type="submit" name="submit" value="Add User" class="formbutton"
+                                style="margin-right: 1em;">
+                        </div>
+                    </fieldset>
+                </form>
+                {% endif %}
+            </section>
+            <section style="border-style: solid;" class="add-task sectionthree">
+                <form action="/create_task" method="POST" style="margin-top: 1em;">
+                    <fieldset style="display: inline;">
+
+                        <legend style="color:mediumvioletred; padding: 1em; text-transform: uppercase; font-weight: 600;">
+                            <b>Add a new Task</b>
+                        </legend>
+
+                        <input type="number" name="board_id" value="{{ current_id }}" hidden>
+
+                        <label for="title"><b>Task Title</b></label>
+                        <input type="text" name="title" placeholder="Enter task title" required
+                            style="margin-right: 1em; min-width: 180px;"><br>
+
+                        <label for="due_date"><b>Due Date</b></label>
+                        <input type="date" name="due_date" required style="margin-right: 1em; min-width: 180px;"><br>
+
+                        <label for="status"><b>Status</b></label>
+                        <select name="status" id="status" style="margin-right: 1em; min-width: 180px;">
+                            <option value="not_complete" selected="selected">Not Completed</option>
+                            <option value="completed">Completed</option>
+                        </select><br>
+
+                        <label for="assigned_to"><b>Assign Task</b></label>
+                        <select name="assigned_to" id="assigned_to" style="margin-right: 1em; max-width: 180px;">
+                            <option value="unassigned">Unassigned</option>
+                            {% for user in users %}
+                            <option value="{{ user.email }}"> {{ user.email }}</option>
+                            {% endfor %}
+                        </select><br>
+
+                        <div style="display: flex; justify-content: right;">
+                            <input type="submit" name="submit" value="Add Task" class="formbutton"
+                                style="margin-right: 1em;">
+                        </div>
+
+                    </fieldset>
+                </form>
+            </section>
+            
+        </div>
+    </div>
+    <div style="display: flex;box-shadow: rgb(0 0 0 / 103%) 0px 2px 4px, rgb(0 0 0 / 115%) 0px 7px 13px -3px, rgb(0 0 0 / 88%) 0px -3px 0px inset;justify-content: space-evenly;">
+        <!--------------------------------------- User Table ---------------------------------------------->
+        <section class="task-table sectionfour" style="border-style:solid;">
+                <div style="max-height: 300px;  overflow-y: scroll;">
+                    <fieldset style="display: inline; min-height: 300px;">
+                        <legend style="color:mediumvioletred ;padding: 1em; text-transform: uppercase; font-weight: 600;">
+                            <b>Current Users in this task board</b>
+                        </legend>
+                        <table>
+                            <tr>
+                                <th>No.</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                
+                            </tr>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.email }}
+                                    {% if user.email == board.creator %}
+                                    <strong>(Creator)</strong>
+                                    {% endif %}
+                                </td>
+                                {% if user_data['email'] == board.creator and user.email != board.creator %}
+                                <td>
+                                    <form action="/delete_user/{{ user.email }}" method="POST">
+                                        <input type="number" name="board_id" value="{{ current_id }}" hidden>
+                                        <input type="submit" name="submit" value="Delete" class="formbutton"
+                                            style="border-color: crimson; border-style: solid;">
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </fieldset>
+                </div>
+        </section>
+    </div>
+    <div style="border-style: solid;">
+        <!--------------------------------------- Task Table ---------------------------------------------->
+        <section class="task-table sectionfive" style="border-style: solid;">
+            <div>
+                {% if user_data %}
+                <fieldset style="display: inline; min-width: 447px; padding-bottom: 1em;">
+                    <legend style="color:mediumvioletred ;padding: 1em; text-transform: uppercase; font-weight: 600;">
+                        <b>{{board.name}}</b>
+                    </legend>
+                    <dl>
+                        <dt>No. of Active Tasks:</dt><dd>{{ board.active_tasks }}</dd>
+                        <dt>No. of Completed Tasks:</dt><dd>{{ board.completed_tasks}}</dd>
+                        <dt>Total No. of Tasks:</dt><dd>{{ board.total_tasks }}</dd>
+                        <dt>Total Completed Today:</dt><dd>{{ board.completed_today }}</dd>
+                        
+                    </dl>
+                    <hr>
+                    <table style="display: flex; flex-wrap: wrap;">
+                        <tr>
+                            <th>No.</th>
+                            <th>Task Title</th>
+                            <th>Due Date</th>
+                            <th>Assigned To</th>
+                            <th>Status</th>
+                            <th>Mark As</th>
+                            <th>Completed At</th>
+                            <th>Controls</th>
+                        </tr>
+                        {% for task in tasks %}
+                        {% if task.assigned_to != "unassigned" %}
+                        <tr>
+                        {% elif task.assigned_to == "unassigned" %}
+                        <tr class="not_assigned">
+                        {% endif %}
+                            <td>{{ loop.index }}</td>
+                            <td>{{ task.title }}</td>
+                            <td>{{ task.due_date }}</td>
+                            <td>{{ task.assigned_to }}
+                                {% if task.assigned_to == board.creator %}
+                                <strong>(Creator)</strong>
+                                {% endif %}
+                            </td>
+                            <td>{{ task.status }}</td>
+                            <td>
+                                {% if task.status == 'not_complete' %}
+                                <form action="/mark_task" method="POST">
+                                    <input type="number" name="board_id" value="{{ current_id }}" hidden>
+                                    <input type="number" name="id" value="{{ task.id }}" hidden>
+                                    <input type="text" name="status" value="completed" hidden>
+                                    <input type="submit" name="submit" value="Completed" class="formbutton" id="formbuttonEdit"
+                                        style="border-color: darkgreen; border-style: solid;">
+                                </form>
+                                {% elif task.status == 'complete' %}
+                                <form action="/mark_task" method="POST">
+                                    <input type="number" name="board_id" value="{{ current_id }}" hidden>
+                                    <input type="number" name="id" value="{{ task.id }}" hidden>
+                                    <input type="text" name="status" value="not_complete" hidden>
+                                    <input type="submit" name="submit" value="Not Completed" class="formbutton"
+                                        style="border-color: crimson; border-style: solid;">
+                                </form>
+                                {% endif %}
+                            </td>
+                            <td>{{ task.completed_at }}</td>
+                            <td>
+                                <div style="display: flex;">
+                                    <a href="/edit_task/{{ task.id }}/{{ current_id }}">
+                                        <input type="number" name="board_id" value="{{ current_id }}" hidden>
+                                        <input type="submit" name="submit" value="Edit" class="formbutton"
+                                            style="border-color: darkgreen; border-style: solid;">
+                                    </a>
+                                    <form action="/delete_task/{{ task.id }}" method="POST">
+                                        <input type="number" name="board_id" value="{{ current_id }}" hidden>
+                                        <input type="submit" name="submit" value="Delete" class="formbutton"
+                                            style="border-color: crimson; border-style: solid;">
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </fieldset>
+                {% elif error_message %}
+                <p>Error Message: {{ error_message }}</p>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,10 @@
+indexes:
+  - kind: EV
+    properties:
+        - name: name
+        - name: manufacturer
+        - name: year
+        - name: battery
+        - name: range
+        - name: cost
+        - name: power

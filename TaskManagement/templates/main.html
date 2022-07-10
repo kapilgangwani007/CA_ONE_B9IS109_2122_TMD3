@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block main %}
+<main>
+    <section>
+        
+    </section>
+    <section class="banner-area">
+        
+        <div>
+            {% if not user_data %}
+            <h3>Login To Dashboard</h3>
+            <p style="text-align: center; margin: 2% 25%;" class="heading">
+                Task Management helps you make dashboards for projects so your team can create, assign and keep the track of tasks very easily.
+            </p>
+            {% endif %}
+            <div id="firebase-auth-container"></div>
+            <button id="sign-out" hidden="true">Sign out</button>
+            
+        </div>
+        
+        <div id="login-info" hidden="true" style="box-shadow: rgb(0 0 0) 0px 25px 50px 0px;display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start;">
+            <!--h2>Login Info</h2-->
+            {% if user_data %}
+                
+                <div style="border-right: solid; padding: 4em;">
+                    <div style="text-align: left; max-width: 500px;box-shadow: rgb(0 0 0 / 100%) 0px 5px 15px;">
+                        <h3 style="text-align: left; padding-left: 0px;">Task Manager</h3>
+                        <p style="color:navy;"><b>Name: {{ user_data['name'] }}</b></p>
+                        <p style="color:navy;"><b>Email: {{ user_data['email'] }}</b></p>
+                    </div>
+                    
+                    <form action="/create_board" method="POST" style="margin-top: 1em;box-shadow: rgb(0 0 0 / 100%) 0px 5px 15px;">
+                        <fieldset style="display: inline;">
+                            <legend style="color: mediumvioletred;padding: 1em; text-transform: uppercase; font-weight: 600;">
+                                <b>Create a New Board</b>
+                            </legend>
+                            <label for="name" style="margin-left: 1em;"><b>Board Name</b></label>
+                            <input type="text" name="name" placeholder="Enter board name" required>
+                            <input type="submit" name="submit" value="Create Board" class="formbutton" style="margin-right: 1em;">
+                        </fieldset>
+                    </form>
+                    
+                </div>
+                <div style="padding: 4em;">
+                    <div style="max-width: 499px;">
+                        <fieldset style="display: inline; min-width: 447px; padding-bottom: 1em;box-shadow: rgb(0 0 0 / 100%) 0px 5px 15px;">
+                            <legend style="color: purple;padding: 1em; text-transform: uppercase; font-weight: 600;">
+                                <b>My Boards</b>
+                            </legend>`
+                            {% if not boards %}
+                            <p>You have not created any boards yet. Create a board to distribute tasks among people.</p>
+                            {% elif boards %}
+                                <ul>
+                                    {% for board in boards %}
+                                    <div class="boardsize"><a href="/board/{{ board.id }}"><li class="boardcolor" style="line-height: 30px; text-align: left; margin-left: 1em; text-transform: uppercase;"><b>{{loop.index}}. {{ board.name }}</b></li></a></div>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </fieldset>
+                    </div>
+                </div>
+            {% elif error_message %}
+                <p>Error Message: {{ error_message }}</p>
+            {% endif %}
+        </div>
+    </section>
+</main>
+{% endblock %}
